@@ -1,18 +1,32 @@
-void setup() {
-  Serial.begin(115200);
-  //Begin serial communication Arduino IDE (Serial Monitor)
-
-  //Begin serial communication Neo6mGPS
-  neogps.begin(9600, SERIAL_8N1, RXD2, TXD2);
-  
-  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
-    Serial.println(F("SSD1306 allocation failed"));
-    for(;;); // Don't proceed, loop forever
+void loop() {
+    
+  boolean newData = false;
+  for (unsigned long start = millis(); millis() - start < 1000;)
+  {
+    while (neogps.available())
+    {
+      if (gps.encode(neogps.read()))
+      {
+        newData = true;
+      }
+    }
   }
 
-  display.clearDisplay();
-  display.display();
-  delay(2000);
-
+  //If newData is true
+  if(newData == true)
+  {
+    newData = false;
+    Serial.println(gps.satellites.value());
+    print_speed();
+  }
+  else
+  {
+    display.clearDisplay();
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.setTextSize(3);
+    display.print("No Data");
+    display.display();
+  }  
+  
 }
